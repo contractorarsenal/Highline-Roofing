@@ -2128,6 +2128,13 @@ button { cursor: pointer; font-family: var(--font-body); border: none; backgroun
   align-items: start;
 }
 
+/* Prevent grid items from overflowing their tracks */
+.contact-form-card,
+.contact-sidebar {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .contact-form-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -2473,6 +2480,20 @@ a.phone-link:hover { opacity: 0.8; }
   .grid-3 { grid-template-columns: 1fr; }
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .stats-grid-4 { grid-template-columns: 1fr 1fr; }
+
+  /* Replace horizontal slide animations with a safe vertical fade on mobile
+     — prevents iOS Safari from creating horizontal scroll via transform */
+  .slide-left,
+  .slide-right {
+    transform: translateY(24px);
+  }
+  .slide-left.visible,
+  .slide-right.visible {
+    transform: translateY(0);
+  }
+
+  /* Tighten the contact layout gap when stacked */
+  .contact-layout { gap: 32px; }
 
   .hero__actions { flex-direction: column; }
   .hero__trust { gap: 8px; }
