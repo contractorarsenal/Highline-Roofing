@@ -132,6 +132,9 @@
           <p class="contact-form-sub">Tell us what is happening, and we will follow up with honest guidance, clear timing, and straightforward pricing.</p>
 
           <form class="form" id="contactForm" novalidate>
+            <input type="hidden" name="access_key" value="c280b1c8-df0b-4c2d-8f4d-519a5b7a18b5">
+            <input type="hidden" name="subject" value="New Estimate Request — Highline Builders & Roofing">
+            <input type="checkbox" name="botcheck" style="display:none;" tabindex="-1" autocomplete="off">
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="firstName">First Name *</label>
@@ -187,12 +190,31 @@
             </div>
 
             <div class="form-submit">
-              <button type="submit" class="btn btn--primary btn--lg" style="width:100%;justify-content:center;">
+              <button type="submit" class="btn btn--primary btn--lg form-submit-btn" style="width:100%;justify-content:center;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
                 Send My Free Estimate Request
               </button>
             </div>
           </form>
+
+          <!-- Success message -->
+          <div id="formSuccess" style="display:none;align-items:center;gap:14px;margin-top:20px;padding:20px 24px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius-sm);">
+            <span style="font-size:1.5rem;flex-shrink:0;">✅</span>
+            <div>
+              <p style="font-size:0.95rem;font-weight:600;color:#22c55e;margin-bottom:4px;">Request Sent!</p>
+              <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;">Thanks — we'll be in touch shortly to confirm your free estimate.</p>
+            </div>
+          </div>
+
+          <!-- Error message -->
+          <div id="formError" style="display:none;align-items:center;gap:14px;margin-top:20px;padding:20px 24px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-sm);">
+            <span style="font-size:1.5rem;flex-shrink:0;">⚠️</span>
+            <div>
+              <p style="font-size:0.95rem;font-weight:600;color:#ef4444;margin-bottom:4px;">Something went wrong.</p>
+              <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;">Please try again or call us directly at <a href="tel:4252090732" style="color:var(--gold);">(425) 209-0732</a>.</p>
+            </div>
+          </div>
+
         </div>
 
         <!-- Sidebar -->
