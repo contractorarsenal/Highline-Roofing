@@ -231,6 +231,21 @@ document.querySelectorAll('.ba-slider').forEach(slider => {
     });
   });
 
+  /* ============================================================
+     REVEAL BUTTONS — Show phone / email on click
+     ============================================================ */
+  document.querySelectorAll('.reveal-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.reveal;
+      const href = btn.dataset.href;
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = text;
+      link.style.color = 'var(--gold)';
+      btn.replaceWith(link);
+    });
+  });
+
   console.log('%c⬡ HIGHLINE BUILDERS & ROOFING', 'color:#FAA421;font-size:14px;font-weight:bold;');
 
 })();
