@@ -251,21 +251,17 @@ fbq('track', 'PageView');
     .rhc-nav {
       position: static;
       min-height: 78px;
-      padding-block: 10px;
+      padding-block: 14px;
       background-color: #0B2540;
       display: flex;
       align-items: center;
     }
     .rhc-nav .container { width: 100%; }
     .rhc-nav .nav__inner { justify-content: space-between; align-items: center; gap: 12px; }
-    /* The source logo asset is a fixed ~1.7:1 rectangle (1200x705). At the
-       requested 120-135px width it renders 70-79px tall, which sets the
-       nav's actual height — going wider than 120px pushes the header past
-       budget, and going narrower to force 78px total would mean shrinking
-       it below the requested width or stretching it off its own aspect
-       ratio, neither of which is acceptable. 120px (the low end of the
-       spec range) is the best fit available without distorting the mark. */
-    .rhc-nav .nav__logo-img { width: 120px; height: auto; max-width: none; }
+    /* The source logo asset is a fixed ~1.7:1 rectangle (1200x705), so width
+       alone determines its rendered height — sized up for recognizability
+       without stretching it off its own aspect ratio. */
+    .rhc-nav .nav__logo-img { width: 135px; height: auto; max-width: none; }
     /* Call Now button: yellow with dark blue text/icon, sized to a
        compact ~250x54 pill rather than the shared .btn--sm defaults. */
     .rhc-nav .rhc-tel-link {
@@ -306,14 +302,6 @@ fbq('track', 'PageView');
       justify-content: space-between;
       gap: 64px;
       align-items: center;
-    }
-
-    /* Soft, left-anchored readability lift for the headline/subcopy only —
-       not a full-width panel — so the photo stays visible everywhere else. */
-    .rhc-hero__copy {
-      position: relative;
-      padding: 28px 32px;
-      margin: -28px -32px;
     }
 
     .rhc-badge { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; }
@@ -695,8 +683,13 @@ fbq('track', 'PageView');
 
     /* Sticky mobile bar — white bar, yellow primary + blue call */
     .rhc-sticky { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1200; background: var(--white); border-top: 1px solid var(--border-light); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 10px; box-shadow: 0 -4px 20px rgba(11,37,64,0.08); }
-    .rhc-sticky__inner { display: flex; gap: 10px; }
-    .rhc-sticky .btn { flex: 1; justify-content: center; padding: 14px 12px; font-size: 0.85rem; }
+    /* .rhc-sticky is itself a flex row (see below); without an explicit
+       width its lone child here would size to its buttons' own content
+       width and sit flush-left, leaving unbalanced empty space on wider
+       phones instead of the two buttons reading as one centered, evenly
+       split group. */
+    .rhc-sticky__inner { display: flex; gap: 10px; width: 100%; }
+    .rhc-sticky .btn { flex: 1; justify-content: center; padding: 14px 12px; font-size: 0.85rem; min-height: 44px; }
 
     /* Materials logo boxes now sit on a white section — the shared
        .partner-logo-wrap style assumes a dark card */
@@ -729,9 +722,9 @@ fbq('track', 'PageView');
       .rhc-card { padding: 24px 20px; }
       .rhc-hero { padding: 40px 20px 40px; }
 
-      /* Larger, clearer header logo on mobile (~100-120px wide),
+      /* Larger, clearer header logo on mobile (~110-140px wide),
          aspect ratio preserved via width + height:auto. */
-      .rhc-nav .nav__logo-img { width: clamp(100px, 26vw, 120px); max-width: 120px; height: auto; }
+      .rhc-nav .nav__logo-img { width: clamp(110px, 28vw, 140px); max-width: 140px; height: auto; }
 
       /* Easier-to-read mobile copy sizing for older homeowners.
          Headline stays under 3 lines at this size given the short copy. */
@@ -764,14 +757,15 @@ fbq('track', 'PageView');
        min-content, so the tel-link never shrinks or wraps — it just gets
        silently clipped past the viewport edge (the site sets overflow-x:
        hidden on html/body, so this clipping produces no scrollbar and is
-       easy to miss). Measured against the logo's clamp(100px,26vw,120px)
-       growth curve, the button overflows the viewport across roughly
-       361-460px (worst case ~73px of clipped content at 361px) before
-       naturally fitting again once the logo clamp maxes out at 120px.
-       Below 480px, drop the visible phone number and show a compact
-       "Call Now" label instead. The full number stays reachable via the
-       tel: href and the button's aria-label for assistive tech. */
-    @media (max-width: 480px) {
+       easy to miss). The logo now grows via clamp(110px,28vw,140px) and
+       doesn't max out until ~500px viewport width, wider than the old
+       120px-cap curve — measured empirically after the logo resize (see
+       QA), the compact-label cutoff below is set to fully clear that
+       wider growth curve with margin. Below this width, drop the visible
+       phone number and show a compact "Call Now" label instead; the full
+       number stays reachable via the tel: href and the button's
+       aria-label for assistive tech. */
+    @media (max-width: 520px) {
       .rhc-nav .nav__inner { gap: 8px; }
       .rhc-nav .rhc-tel-link { font-size: 0.8rem; padding: 13px 14px; gap: 6px; }
       .rhc-nav .rhc-tel-link svg { width: 13px; height: 13px; flex-shrink: 0; }
@@ -862,10 +856,10 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
   <nav class="nav rhc-nav" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="nav__inner">
-        <a href="../index.html" class="nav__logo" aria-label="Highline Builders & Roofing Home">
-          <img src="https://github.com/user-attachments/assets/cb9f9d80-f772-4895-b827-4f6c4d1b6217" alt="Highline Builders &amp; Roofing" class="nav__logo-img" />
-        </a>
-        <a href="tel:4253218309" class="btn btn--primary btn--sm rhc-tel-link" aria-label="Call Highline Roofing now at (425) 321-8309">
+        <div class="nav__logo" role="img" aria-label="Highline Builders &amp; Roofing">
+          <img src="https://github.com/user-attachments/assets/cb9f9d80-f772-4895-b827-4f6c4d1b6217" alt="Highline Builders &amp; Roofing logo" class="nav__logo-img" />
+        </div>
+        <a href="tel:+14253218309" class="btn btn--primary btn--sm rhc-tel-link" aria-label="Call Highline Roofing now at (425) 321-8309">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 011 1.17 2 2 0 012.96 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
           <span>Call Now</span><span class="rhc-tel-link__number">&nbsp;&bull; (425) 321-8309</span>
         </a>
@@ -882,7 +876,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
     <div class="rhc-hero__scrim" aria-hidden="true"></div>
     <div class="container">
       <div class="rhc-hero__inner">
-        <div class="rhc-hero__copy">
+        <div>
           <div class="rhc-badge"><span class="label">Serving King, Snohomish &amp; Island Counties</span></div>
           <h1 class="rhc-hero__title">Don&rsquo;t Wait For A Roof Leak.</h1>
           <p class="rhc-hero__sub">Get a free professional roof inspection with drone photos and honest recommendations.</p>
@@ -1065,7 +1059,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
             <div>
               <p class="rhc-success__title">Your Inspection Request Is In</p>
               <p class="rhc-success__text">A real Highline team member will contact you shortly. During business hours, we typically respond within five minutes.</p>
-              <a href="tel:4253218309" class="btn btn--primary btn--sm rhc-tel-link" style="margin-top:16px;">Call Highline Now: (425) 321-8309</a>
+              <a href="tel:+14253218309" class="btn btn--primary btn--sm rhc-tel-link" style="margin-top:16px;">Call Highline Now: (425) 321-8309</a>
             </div>
           </div>
 
@@ -1073,7 +1067,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
             <span class="rhc-error__icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
             <div>
               <p class="rhc-error__title">Something went wrong.</p>
-              <p class="rhc-error__text">Please try again, or call us directly at <a href="tel:4253218309" class="rhc-tel-link" style="color:var(--brand-blue);font-weight:700;">(425) 321-8309</a>.</p>
+              <p class="rhc-error__text">Please try again, or call us directly at <a href="tel:+14253218309" class="rhc-tel-link" style="color:var(--brand-blue);font-weight:700;">(425) 321-8309</a>.</p>
             </div>
           </div>
         </div>
@@ -1408,7 +1402,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
         <p class="rhc-final__sub">Request your free inspection, receive photo-documented findings, and get a clear written estimate with no obligation.</p>
         <div class="rhc-final__actions">
           <button type="button" class="btn btn--primary btn--lg rhc-scroll-btn" data-cta="final-cta">Start My Free Roof Check</button>
-          <a href="tel:4253218309" class="btn btn--primary btn--lg rhc-tel-link">Call (425) 321-8309</a>
+          <a href="tel:+14253218309" class="btn btn--primary btn--lg rhc-tel-link">Call (425) 321-8309</a>
         </div>
       </div>
     </div>
@@ -1649,7 +1643,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
        ============================================================ -->
   <div class="rhc-sticky" role="region" aria-label="Quick contact">
     <div class="rhc-sticky__inner">
-      <a href="tel:4253218309" class="btn btn--primary rhc-tel-link">
+      <a href="tel:+14253218309" class="btn btn--primary rhc-tel-link">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 011 1.17 2 2 0 012.96 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
         Call Now
       </a>
@@ -1872,7 +1866,7 @@ src="https://www.facebook.com/tr?id=1053488807263721&ev=PageView&noscript=1"
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (submitting) return;
-    if (!validateStep(3)) return;
+    if (!validateStep(4)) return;
 
     submitting = true;
     var btn = form.querySelector('.form-submit-btn');
