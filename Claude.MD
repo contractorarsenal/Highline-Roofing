@@ -28,10 +28,10 @@ Service Area:
 Everett, Bothell, Mill Creek, Lynnwood, Marysville, Snohomish, Mukilteo, Lake Stevens, and Snohomish County.
 
 Phone:
-(425) 209-0732
+425-321-8309
 
 Tel Link:
-tel:4252090732
+tel:+14253218309
 
 Website:
 https://highlinebuildersroofing.com/
