@@ -140,7 +140,8 @@ Do not remove, duplicate, or alter these without explicit instructions:
 | Integration | ID / Detail | Where |
 | --- | --- | --- |
 | Google Tag Manager | `GTM-N8XLLRPV` | Every HTML page (head script and noscript iframe) |
-| Microsoft Clarity | `ygb2svjdci` | Every HTML page |
+| Google Analytics 4 | `G-L1Y3K9JYTW` (direct `gtag.js`, one `config` call per page) | Every HTML page, immediately after the GTM head block. No consent gating exists on the site. |
+| Microsoft Clarity | `ygb2svjdci` | Every HTML page (direct snippet). The published GTM container also carries a tag with this project ID (see Known Issues). |
 | Meta Pixel | `1076795415074859` and `1053488807263721` (two `fbq('init')` calls) | Every HTML page. Both IDs **need ownership verification.** |
 | Meta events, offer page | `PageView` (all pages), `ViewContent` on load, `Contact` on click of phone links (`.rhc-tel-link`), `Lead` on successful submission | `roof-replacement-offer/index.html` |
 | UTM and fbclid capture | `sessionStorage` key `hl_lp_utms`, hidden form fields | Offer page |
@@ -203,6 +204,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **GitHub Pages URL:** https://contractorarsenal.github.io/Highline-Roofing/
 - **Custom domain on GitHub Pages:** None configured (Pages API `cname: null`).
 - **Production domain:** https://highlinebuildersroofing.com/. **Its hosting provider is not verified.** Do not claim a site update is live on the production domain until the real host is confirmed.
+- **DNS observation (2026-10-19):** `highlinebuildersroofing.com` returned NXDOMAIN from the working environment (`host`, `nslookup`, and `curl` all failed to resolve it), while other hosts resolved normally. The domain may be unregistered, unconfigured, or not yet propagated. Confirm DNS with the domain registrar before any production claim.
 - **Cloudflare:** PR #4 proposes a Workers config (`wrangler.jsonc`, name `highlineroofing`, assets directory `.`) and a `.gitignore`. It is not merged and not deployed. Do not modify Cloudflare configuration without approval.
 - No GitHub Actions workflow files exist in the repository. The Pages workflow is GitHub-managed.
 
@@ -234,6 +236,8 @@ These are the agreed command phrases. Each has a fixed scope.
 - Business claims and review schema (`aggregateRating` 5.0 / 24) require validation.
 - Missing `sitemap.xml`, `robots.txt`, favicon, and 404 page.
 - External image hosting dependencies. Images are hotlinked from `github.com/user-attachments/assets/`. The site has no local image files.
+- Possible double Clarity initialization: the published GTM container (`GTM-N8XLLRPV`) contains one tag whose config holds Clarity project ID `ygb2svjdci`, in addition to the direct Clarity snippet on every page. Not yet verified in the GTM UI.
+- GTM container check: the published container has no GA4 tag. The GA4 ID `G-L1Y3K9JYTW` is installed directly only. A second gtag.js request with a `gtm=` parameter appears intermittently in browser tests, but it sends no extra `config` or `page_view`.
 - Stale HTML comments: "TODO: Replace with real … profile URL before launch" appear near social links that already contain URLs.
 - Footer credit "Built by contractorarsenal.com" appears on every page. Confirm the client wants it.
 - Offer page is not in site navigation and is not `noindex`.
