@@ -6,3 +6,4 @@ exclude:
   - _config.yml
   - .assetsignore
   - .gitignore
+  - wrangler.jsonc
