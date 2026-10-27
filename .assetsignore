@@ -1,0 +1,7 @@
+# Files that must never be published as Cloudflare Workers static assets.
+# Internal project documentation and configuration only.
+CLAUDE.md
+_config.yml
+.assetsignore
+.gitignore
+.git
