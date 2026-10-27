@@ -2,6 +2,7 @@
 # Internal project documentation and configuration only.
 CLAUDE.md
 _config.yml
+wrangler.jsonc
 .assetsignore
 .gitignore
 .git
