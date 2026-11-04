@@ -3,6 +3,8 @@
 # with no front matter and no Liquid tags, so pages are copied unchanged.
 exclude:
   - CLAUDE.md
+  - PROJECT-STATUS.md
+  - DEPLOYMENT.md
   - _config.yml
   - .assetsignore
   - .gitignore

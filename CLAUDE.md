@@ -1,6 +1,8 @@
 # CLAUDE.md — Highline Builders & Roofing Website
 
-Project instructions for Claude Code. Facts were verified against the repository on 2026-10-15 unless marked otherwise. Anything not verified is labeled **Unverified**.
+Project instructions for Claude Code. Facts were verified against the repository and live hosts on 2026-11-04 unless marked otherwise. Anything not verified is labeled **Unverified**.
+
+**Explicitly unverified:** (1) the Cloudflare production configuration (dashboard build settings, route bindings, redirects, promoted Worker version) and (2) final client approval of the canonical domain. Do not state either as confirmed. Companion docs: `PROJECT-STATUS.md` (current work) and `DEPLOYMENT.md` (release workflow).
 
 ## Project Overview
 
@@ -72,9 +74,9 @@ privacy-policy.html, terms-of-service.html   (site root)
 css/styles.css                                (all site styles, ~2,970 lines)
 js/main.js                                    (shared site JavaScript)
 roof-replacement-offer/index.html             (standalone landing page, loads ../css and ../js)
-Claude.MD → renamed to CLAUDE.md             (this file; internal, excluded from publication)
+CLAUDE.md, PROJECT-STATUS.md, DEPLOYMENT.md   (internal docs, excluded from publication)
 sitemap.xml, robots.txt                       (SEO files, root)
-.assetsignore, _config.yml                    (publication exclusion config, internal)
+.assetsignore, _config.yml, wrangler.jsonc    (publication and Workers config, internal)
 ```
 
 - There are no local image, video, or font files. Media is hosted externally (see Known Issues).
@@ -201,7 +203,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **Default branch:** `main`, tracking `origin/main`
 - **Repo-local author identity:** Jay Duran `<259208228+contractorarsenal@users.noreply.github.com>`. Do not change global Git config.
 - `.DS_Store` is excluded in `.git/info/exclude`. Do not commit it.
-- Remote branches: `main`, and `cloudflare/workers-autoconfig` (not merged).
+- Remote branches: `main`, `seo/technical-release-1` (SEO Release 1, not merged), `chore/highline-claude-instructions` (identical to `main`), and `cloudflare/workers-autoconfig` (not merged).
 - Open PRs: **#4**, "Add Cloudflare Workers configuration" (bot-generated). Do not merge without explicit approval.
 - Rules:
   - Treat `main` as deployment-sensitive. Pushing to `main` triggers two production publishers: GitHub Pages and the Cloudflare Workers Builds for `highlineroofing`. See Deployment.
@@ -220,7 +222,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **Live customer-facing site (verified 2026-10-27):** `https://www.highlineroofingwa.com/` and `https://highlineroofingwa.com/` resolve through Cloudflare. Both serve HTML byte-identical to `main` at the time of verification.
 - **Obsolete domain:** `highlinebuildersroofing.com` returns NXDOMAIN. Confirm registration with the registrar before any production claim that involves it.
 - **Redirects (verified behavior, not configured in the repo):** the apex and `www` both return 200 with no redirect between them. `http://` returns 200 with no redirect to HTTPS. `.html` URLs return 307 to the clean URL, for example `/about.html` to `/about`. Redirect rules are not verified; they are configured in Cloudflare.
-- **Cloudflare Workers (verified via GitHub check runs):** the Workers Builds project `highlineroofing` is connected to this repo. Its check run on `main` commit `4e6a89f` succeeded on 2026-10-19 at 08:16 UTC with a production version ID. Pushes to other branches trigger Workers Builds check runs. Every feature-branch build so far has failed (`2bc1239`, `a3a18ae`, `0c652bb`), and no preview is produced. The cause is unknown because build logs are only in the Cloudflare dashboard. Builds on `main` have succeeded. The Cloudflare build settings and domain bindings are stored in the Cloudflare dashboard, not in the repo. Not verified from here: the root directory, build command, deploy command, and route bindings.
+- **Cloudflare Workers (verified via GitHub check runs):** the Workers Builds project `highlineroofing` is connected to this repo. Its check run on `main` commit `4e6a89f` succeeded on 2026-10-19 at 08:16 UTC with a production version ID. Pushes to other branches trigger Workers Builds check runs. Feature-branch builds `2bc1239`, `a3a18ae` and `0c652bb` failed (before `wrangler.jsonc` existed; logs are only in the Cloudflare dashboard). The build on `seo/technical-release-1` at `1d593f8` succeeded. No preview is produced. Builds on `main` have succeeded. The Cloudflare build settings and domain bindings are stored in the Cloudflare dashboard, not in the repo. Not verified from here: the root directory, build command, deploy command, and route bindings.
 - **GitHub Pages (verified):** GitHub Pages serves `main` at `/` (`contractorarsenal.github.io/Highline-Roofing`). It is a second public copy of the site. It has no custom domain.
 - **Workers config on feature branch `seo/technical-release-1`:** `wrangler.jsonc` sets name `highlineroofing`, `assets.directory` to `.`, and `html_handling` to `auto-trailing-slash` (preserves clean URLs). Internal files are excluded by `.assetsignore`. Without this file, Workers Builds fails on `npx wrangler versions upload` with "Missing entry-point to Worker script or to assets directory." Not yet merged to `main`. Merging changes what the production build publishes; verify the dashboard build settings match before merge.
 - **Cloudflare PR #4:** proposes a Workers config with the same name, with `assets.directory` set to `.` and no exclusion file. Merging it would publish internal files. Do not merge. Not deployed.
@@ -228,10 +230,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 ### Internal File Protection
 
-- `CLAUDE.md`, `_config.yml`, `.assetsignore`, and `.gitignore` must not be publicly served.
+- `CLAUDE.md`, `PROJECT-STATUS.md`, `DEPLOYMENT.md`, `_config.yml`, `.assetsignore`, `wrangler.jsonc`, and `.gitignore` must not be publicly served.
+- When adding any new internal file, add it to **both** `.assetsignore` and `_config.yml` in the same commit.
 - `.assetsignore` excludes these files from Cloudflare Workers static assets.
 - `_config.yml` excludes these files from the GitHub Pages Jekyll build. Jekyll is enabled only for this exclude list; the site has no front matter and no Liquid tags.
-- Status: added on the feature branch `seo/technical-release-1`. Behavior is not yet verified on the live hosts. Verify with `/CLAUDE.md` returning 404 on both hosts before production release.
+- Status: on the feature branch `seo/technical-release-1`. Isolated tests on 2026-11-04 (real Jekyll 3.9.5 build and a local Wrangler asset server, each with a negative control) confirmed the exclusions. See `PROJECT-STATUS.md`. These tests do not prove the live Cloudflare build. Verify `/CLAUDE.md` returns 404 on both hosts after release.
 - `robots.txt` is not a security control and must not be relied on to hide files.
 
 ### Safe GitHub Publishing Procedure
@@ -259,7 +262,7 @@ These are the agreed command phrases. Each has a fixed scope.
 - Use targeted searches (`grep -n`, specific files). Avoid full-project scans.
 - Do not launch subagents for routine tasks.
 - Do not repeat large file contents in reports.
-- Run only checks relevant to the requested change. Do not run builds, since none exist.
+- Run only checks relevant to the requested change. The site has no build step. The only builds are the isolated exclusion tests described in `DEPLOYMENT.md`, run in a temporary directory outside the repo.
 
 ## Known Issues (Outstanding, Not Approved for Repair)
 
@@ -271,8 +274,9 @@ These are the agreed command phrases. Each has a fixed scope.
 - Two Meta Pixel IDs require ownership verification.
 - Business claims and review schema (`aggregateRating` 5.0 / 24) require validation.
 - `sitemap.xml` and `robots.txt` are on the feature branch, not yet deployed. Favicon and 404 page are missing.
-- Live copy of `/CLAUDE.md` was publicly reachable (HTTP 200) on both hosts before the exclusion files. Recheck after release.
-- Workers Builds feature-branch failures (`2bc1239`, `a3a18ae`, `0c652bb`) are unexplained. The `.assetsignore` exclusion therefore cannot be verified on a preview.
+- Live `/CLAUDE.md` is publicly reachable (HTTP 200, checked 2026-11-04) until the SEO branch is released. Recheck on both hosts after release.
+- Cloudflare production configuration is unverified (dashboard only). Final canonical-domain approval is unverified.
+- Earlier Workers Builds feature-branch failures (`2bc1239`, `a3a18ae`, `0c652bb`) predate `wrangler.jsonc`. The check on `1d593f8` succeeded, but it produces no public preview, so exclusion on the real Cloudflare build is only provable after release.
 - External image hosting dependencies. Images are hotlinked from `github.com/user-attachments/assets/`. The site has no local image files.
 - Possible double Clarity initialization: the published GTM container (`GTM-N8XLLRPV`) contains one tag whose config holds Clarity project ID `ygb2svjdci`, in addition to the direct Clarity snippet on every page. Not yet verified in the GTM UI.
 - GTM container check: the published container has no GA4 tag. The GA4 ID `G-L1Y3K9JYTW` is installed directly only. A second gtag.js request with a `gtm=` parameter appears intermittently in browser tests, but it sends no extra `config` or `page_view`.

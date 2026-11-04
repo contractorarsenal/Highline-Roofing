@@ -1,6 +1,8 @@
 # Files that must never be published as Cloudflare Workers static assets.
 # Internal project documentation and configuration only.
 CLAUDE.md
+PROJECT-STATUS.md
+DEPLOYMENT.md
 _config.yml
 wrangler.jsonc
 .assetsignore
