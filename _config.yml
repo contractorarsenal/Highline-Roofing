@@ -1,0 +1,11 @@
+# GitHub Pages (Jekyll) build settings.
+# Jekyll is enabled only to apply this exclude list. The site is plain static HTML,
+# with no front matter and no Liquid tags, so pages are copied unchanged.
+exclude:
+  - CLAUDE.md
+  - PROJECT-STATUS.md
+  - DEPLOYMENT.md
+  - _config.yml
+  - .assetsignore
+  - .gitignore
+  - wrangler.jsonc
