@@ -44,7 +44,7 @@ These files must never be publicly served:
 1. **Branch.** Work on a feature branch. Never commit directly to `main`. Never force-push.
 2. **Isolated build tests.** Copy the working tree (without `.git`) to a temporary directory outside the repo. Run the Jekyll build and a local Workers asset server there, then confirm the internal files are absent from the output. Do not rely on file-pattern matching alone.
 3. **Review the diff.** Confirm there are no design, form, tracking-ID, or JavaScript changes unless approved.
-4. **Check the Cloudflare Workers Builds check run** for the branch (`gh api repos/contractorarsenal/Highline-Roofing/commits/<sha>/check-runs`). Feature-branch builds produce no public preview, so success of the check does not prove what is served.
+4. **Check the Cloudflare Workers Builds check run** for the branch (`gh api repos/contractorarsenal/Highline-Roofing/commits/<sha>/check-runs`). A successful feature-branch build publishes a non-production preview URL (in the check-run summary, `noindex` via `X-Robots-Tag`); verify the excluded files return 404 there. A `queued` suite that never runs (as with `85207b9`) proves nothing.
 5. **Approvals required before merge:** canonical-domain approval, and a review of the Cloudflare dashboard settings against `wrangler.jsonc`.
 6. **Merge to `main`** only with explicit approval. This publishes to both hosts.
 7. **Post-release verification** (curl against both hosts):
