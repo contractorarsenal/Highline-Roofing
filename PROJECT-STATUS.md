@@ -115,13 +115,26 @@ Tests run 2026-11-16 on the final tree:
 - **robots.txt (live):** Cloudflare's managed block (Content-Signal + 31 AI/scraper crawlers disallowed, unchanged by request) followed by the repo block `User-agent: *` / `Allow: /` / `Sitemap: https://www.highlineroofingwa.com/sitemap.xml`. Googlebot is not named anywhere and is allowed.
 - **Search Console:** the existing verified property is the **domain property** `sc-domain:highlineroofingwa.com` (the account has no access to the URL-prefix property `https://www.highlineroofingwa.com/`; none was created). `https://www.highlineroofingwa.com/sitemap.xml` had been submitted 2026-02-23 with status "Couldn't fetch" (last read 2026-04-24). Resubmitted 2026-11-16: status **Success**, 5 discovered pages.
 
-### Still outstanding after Release 1 (Cloudflare dashboard, not done)
+### Cloudflare HTTPS enforcement and apex → www redirect (done 2026-11-16, ~20:50 UTC)
 
-Verified live after the release: `http://` on both hosts returns 200 with no HTTPS redirect and no HSTS header; `https://highlineroofingwa.com/` returns 200 with no redirect to `www`; query strings are preserved as-is. Required in the Cloudflare dashboard (zone `highlineroofingwa.com`), needs an account login with zone-settings and rules edit rights:
+Configured in the Cloudflare dashboard (zone `highlineroofingwa.com`, signed-in browser session). Inspected first: 0 Redirect Rules, 0 Page Rules, no Bulk Redirects referencing the zone, Always Use HTTPS off, HSTS off, active edge certificates covering apex and `www`. DNS, Worker bindings, email records, AI crawler settings and all other settings untouched.
 
-1. SSL/TLS → Edge Certificates → **Always Use HTTPS**: on (and consider HSTS after it is confirmed working).
-2. Rules → Redirect Rules: **apex → www**, 301, expression `(http.host eq "highlineroofingwa.com")`, target `concat("https://www.highlineroofingwa.com", http.request.uri.path)`, preserve query string on. Test afterwards: `http://highlineroofingwa.com/about?x=1` → one or two hops → `https://www.highlineroofingwa.com/about?x=1` (200), and `https://www.highlineroofingwa.com/` must not redirect (loop check).
-3. Re-run the redirect matrix in DEPLOYMENT.md after the change.
+1. SSL/TLS → Edge Certificates → **Always Use HTTPS: on**. HSTS left off (enable later once the redirects have been stable; it is hard to undo).
+2. Rules → Redirect Rules → single redirect **"Redirect apex to www (301)"**, enabled, order 1 of 1. Match: custom expression `(http.host eq "highlineroofingwa.com")`. Action: dynamic URL redirect, expression `concat("https://www.highlineroofingwa.com", http.request.uri.path)`, status 301, preserve query string on.
+
+Live verification (curl, 20:57 UTC):
+
+| Request | Chain | Final |
+| --- | --- | --- |
+| `http://highlineroofingwa.com/about?x=1` | 301 (1 hop) | `https://www.highlineroofingwa.com/about?x=1` 200 |
+| `https://highlineroofingwa.com/about?x=1` | 301 (1 hop) | same, 200 |
+| `http://www.highlineroofingwa.com/about?x=1` | 301 (1 hop) | same, 200 |
+| `https://www.highlineroofingwa.com/about?x=1` | none (0 hops) | 200 served directly |
+| `http://highlineroofingwa.com/about.html?x=1` | 301 → 307 (2 hops) | same, 200 |
+| `http://www.highlineroofingwa.com/contact.html` (the GSC HTTP URL) | 301 → 307 | `https://www.highlineroofingwa.com/contact` 200 |
+| `https://highlineroofingwa.com/services?utm_source=fb&utm_medium=cpc` | 301 | query string preserved |
+
+No loops: `/`, `/about?x=1` and `/roof-replacement-offer/` on `https://www` return 200 with 0 hops; all 12 public paths on `www` still 200 with 0 hops. The redirect rule fires before Always Use HTTPS, so `http://apex` reaches `https://www` in a single hop.
 
 ### Follow-up items recorded separately
 

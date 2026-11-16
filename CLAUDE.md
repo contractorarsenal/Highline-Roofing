@@ -2,7 +2,7 @@
 
 Project instructions for Claude Code. Facts were verified against the repository and live hosts on 2026-11-16 unless marked otherwise. Anything not verified is labeled **Unverified**.
 
-**Verified 2026-11-16:** the owner confirmed `https://www.highlineroofingwa.com/` as the production host, and the Cloudflare Worker `highlineroofing` is bound to `www.highlineroofingwa.com` and the apex (read via API). **Still unverified / not configured:** Cloudflare zone settings (Always Use HTTPS, HSTS) and redirect rules (apex → www); see Known Issues. Companion docs: `PROJECT-STATUS.md` (current work) and `DEPLOYMENT.md` (release workflow).
+**Verified 2026-11-16:** the owner confirmed `https://www.highlineroofingwa.com/` as the production host, and the Cloudflare Worker `highlineroofing` is bound to `www.highlineroofingwa.com` and the apex (read via API). Always Use HTTPS and the apex → www 301 redirect rule were configured in the Cloudflare dashboard on 2026-11-16 and verified live. HSTS is off. Nothing else in the Cloudflare zone has been inspected or changed. Companion docs: `PROJECT-STATUS.md` (current work) and `DEPLOYMENT.md` (release workflow).
 
 ## Project Overview
 
@@ -222,7 +222,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **Custom domain on GitHub Pages:** None configured (Pages API `cname: null`).
 - **Live customer-facing site (verified 2026-11-16):** `https://www.highlineroofingwa.com/` and `https://highlineroofingwa.com/` are custom domains of Worker `highlineroofing` (version `e1bde0e1`). Both serve HTML byte-identical to `main` (`892ab9c`).
 - **Obsolete domain:** `highlinebuildersroofing.com` returns NXDOMAIN. Confirm registration with the registrar before any production claim that involves it.
-- **Redirects (verified behavior, not configured in the repo):** the apex and `www` both return 200 with no redirect between them. `http://` returns 200 with no redirect to HTTPS. `.html` URLs return 307 to the clean URL, for example `/about.html` to `/about`. Redirect rules are not verified; they are configured in Cloudflare.
+- **Redirects (verified 2026-11-16, configured in Cloudflare, not in the repo):** `http://` on either host → 301 to `https://`; apex → 301 to `https://www.highlineroofingwa.com` with path and query string preserved (Redirect Rule "Redirect apex to www (301)"); `.html` URLs → 307 to the clean URL (Workers `html_handling`). `https://www` URLs serve directly with no redirect.
 - **Cloudflare Workers (verified via GitHub check runs):** the Workers Builds project `highlineroofing` is connected to this repo. Its check run on `main` commit `4e6a89f` succeeded on 2026-10-19 at 08:16 UTC with a production version ID. Pushes to other branches trigger Workers Builds check runs. Feature-branch builds `2bc1239`, `a3a18ae` and `0c652bb` failed (before `wrangler.jsonc` existed; logs are only in the Cloudflare dashboard). Feature-branch builds that succeed publish a non-production preview (for example `1d593f8` → `https://bf12b8ce-highlineroofing.web-7f6.workers.dev`, alias `https://seo-technical-release-1-highlineroofing.web-7f6.workers.dev`), served with `X-Robots-Tag: noindex`. The Cloudflare check suite for `85207b9` stayed `queued` and never built. Builds on `main` have succeeded. The Cloudflare build settings and domain bindings are stored in the Cloudflare dashboard, not in the repo. Not verified from here: the root directory, build command, deploy command, and route bindings.
 - **GitHub Pages (verified):** GitHub Pages serves `main` at `/` (`contractorarsenal.github.io/Highline-Roofing`). It is a second public copy of the site. It has no custom domain.
 - **Workers config (on `main` since 2026-11-16):** `wrangler.jsonc` sets name `highlineroofing`, `assets.directory` to `.`, and `html_handling` to `auto-trailing-slash` (preserves clean URLs). Internal files are excluded by `.assetsignore`. Without this file, Workers Builds fails on `npx wrangler versions upload` with "Missing entry-point to Worker script or to assets directory."
@@ -268,7 +268,7 @@ These are the agreed command phrases. Each has a fixed scope.
 ## Known Issues (Outstanding, Not Approved for Repair)
 
 - Canonical domain confirmed by the owner (2026-11-16): `https://www.highlineroofingwa.com/`. `highlinebuildersroofing.com` is NXDOMAIN.
-- **Outstanding (approved, not done):** apex and `www` both serve 200 with no redirect, `http://` is not redirected to HTTPS, no HSTS (re-verified after Release 1). Needs Always Use HTTPS and an apex → www 301 redirect rule in the Cloudflare dashboard; the local wrangler OAuth token has `zone (read)` only and cannot set them. Steps in `PROJECT-STATUS.md`.
+- Redirects done 2026-11-16: `http://` → `https://` (Always Use HTTPS) and apex → `www` (Redirect Rule, 301, path and query preserved), verified live with no loops. HSTS is not enabled (decide later). The local wrangler OAuth token has `zone (read)` only; these settings live in the dashboard.
 - Cloudflare PR #4 remains open.
 - Contact form validation requires investigation (`novalidate` with no JS validation).
 - **Broken video source:** the Supabase host `ivhxwbmlmqhqncbkjuou.supabase.co` used by four `<source>` elements (three in `index.html`, one in `about.html`; one public and three signed URLs) no longer resolves in DNS, so the videos never load. Posters still render. Needs new hosting and approval. Tokens are embedded in the signed URLs and must not be copied elsewhere.
@@ -276,7 +276,7 @@ These are the agreed command phrases. Each has a fixed scope.
 - Business claims and review schema (`aggregateRating` 5.0 / 24) require validation.
 - Favicon (`/favicon.ico` 404, no `<link rel="icon">`) and a custom 404 page are missing.
 - `/CLAUDE.md` and the other internal files return 404 on both hosts since the 2026-11-16 release (was 200 before).
-- Cloudflare build settings and domain bindings verified via API on 2026-11-16 (Worker `highlineroofing` on `www` and apex, compatibility date matches `wrangler.jsonc`). Zone settings and redirect rules remain unverified (no token scope).
+- Cloudflare build settings and domain bindings verified via API on 2026-11-16 (Worker `highlineroofing` on `www` and apex, compatibility date matches `wrangler.jsonc`). Zone has one Redirect Rule and Always Use HTTPS on; no Page Rules.
 - Earlier Workers Builds feature-branch failures (`2bc1239`, `a3a18ae`, `0c652bb`) predate `wrangler.jsonc`. Builds for `23c1a62`, `e121335` and the merge `892ab9c` succeeded; excluded files verified 404 on the previews and on production.
 - External image hosting dependencies. Images are hotlinked from `github.com/user-attachments/assets/`. The site has no local image files.
 - Possible double Clarity initialization: the published GTM container (`GTM-N8XLLRPV`) contains one tag whose config holds Clarity project ID `ygb2svjdci`, in addition to the direct Clarity snippet on every page. Not yet verified in the GTM UI.

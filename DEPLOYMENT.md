@@ -6,13 +6,15 @@ Internal document. Not for public serving (excluded from Cloudflare and GitHub P
 
 **Unverified, and must stay labeled so until confirmed:**
 
-- **Cloudflare zone settings and redirect rules.** Always Use HTTPS, HSTS and an apex → www redirect are not configured (verified live 2026-11-16: `http://` serves 200, apex serves 200). The local wrangler OAuth token has `zone (read)` only, so these must be set in the dashboard by an account with zone-settings and rules edit rights. Build settings (root directory, build command) are still dashboard-only, but the builds for `23c1a62`, `e121335` and `892ab9c` succeeded with the repo's `wrangler.jsonc`.
+- **Cloudflare build settings** (root directory, build command) are dashboard-only and were not inspected, but the builds for `23c1a62`, `e121335` and `892ab9c` succeeded with the repo's `wrangler.jsonc`.
+- **HSTS** is not enabled (deliberately deferred).
 
 **Verified (2026-11-16):**
 
 - Owner confirmed `https://www.highlineroofingwa.com/` as the production host.
 - Worker `highlineroofing` custom domains: `www.highlineroofingwa.com` and `highlineroofingwa.com` (zone `6db56e4f…`). Production version `e1bde0e1` from merge commit `892ab9c`.
 - Search Console: domain property `sc-domain:highlineroofingwa.com`; sitemap resubmitted, status Success.
+- Cloudflare zone: Always Use HTTPS on; Redirect Rule "Redirect apex to www (301)" (`http.host eq "highlineroofingwa.com"` → `concat("https://www.highlineroofingwa.com", http.request.uri.path)`, 301, query preserved). No Page Rules. Verified live, no loops.
 
 **Verified earlier (2026-10-27 and 2026-11-04):**
 
@@ -60,23 +62,25 @@ These files must never be publicly served:
    - GTM, GA4, Clarity and Meta Pixel IDs are still present once per page.
 8. **Rollback.** Revert on a branch and run the same workflow. Cloudflare version rollback is done in the dashboard and needs approval (version before Release 1: `927b4221`; Release 1: `e1bde0e1`).
 
-## Redirect matrix (live, 2026-11-16, after Release 1)
+## Redirect matrix (live, 2026-11-16, after the Cloudflare changes)
 
 | Request | Result |
 | --- | --- |
-| `https://www.highlineroofingwa.com/about` | 200, no redirect |
-| `https://highlineroofingwa.com/about` | 200, no redirect to `www` (outstanding) |
-| `http://www.highlineroofingwa.com/` and `http://highlineroofingwa.com/` | 200 over plain HTTP, no HTTPS redirect, no HSTS (outstanding) |
-| `/about.html`, `/index.html`, `/contact.html` | 307 to the clean URL |
+| `https://www.highlineroofingwa.com/about?x=1` | 200, no redirect |
+| `https://highlineroofingwa.com/about?x=1` | 301 → `https://www.highlineroofingwa.com/about?x=1` (1 hop) |
+| `http://highlineroofingwa.com/about?x=1` | 301 → `https://www.highlineroofingwa.com/about?x=1` (1 hop) |
+| `http://www.highlineroofingwa.com/about?x=1` | 301 → `https://www.highlineroofingwa.com/about?x=1` (1 hop) |
+| `http://…/about.html?x=1`, `http://www…/contact.html` | 301 → 307 → clean HTTPS www URL (2 hops) |
 | `/about/` | 307 to `/about` |
 | `/roof-replacement-offer` | 307 to `/roof-replacement-offer/` |
 | Query strings | preserved on every hop |
+| HSTS | not enabled |
 
-After the dashboard changes, rerun this table and add: `http://highlineroofingwa.com/about?x=1` must end at `https://www.highlineroofingwa.com/about?x=1` with 200, and `https://www.highlineroofingwa.com/` must not redirect.
+Rerun after any Cloudflare rule change. The preferred `https://www` URLs must stay at 0 hops.
 
 ## Do not
 
 - Merge PR #4 (`cloudflare/workers-autoconfig`). It is based on an old commit, would delete `roof-replacement-offer/index.html`, and publishes internal files.
-- Promote a Cloudflare Worker version, change DNS, or change redirects without explicit approval.
+- Promote a Cloudflare Worker version, change DNS, or change the redirect rule / Always Use HTTPS without explicit approval.
 - Claim any update is live until the live host has been checked.
 - Print or commit Web3Forms access keys or Supabase tokens.
