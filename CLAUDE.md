@@ -1,8 +1,8 @@
 # CLAUDE.md — Highline Builders & Roofing Website
 
-Project instructions for Claude Code. Facts were verified against the repository and live hosts on 2026-11-04 unless marked otherwise. Anything not verified is labeled **Unverified**.
+Project instructions for Claude Code. Facts were verified against the repository and live hosts on 2026-11-16 unless marked otherwise. Anything not verified is labeled **Unverified**.
 
-**Explicitly unverified:** (1) the Cloudflare production configuration (dashboard build settings, route bindings, redirects, promoted Worker version) and (2) final client approval of the canonical domain. Do not state either as confirmed. Companion docs: `PROJECT-STATUS.md` (current work) and `DEPLOYMENT.md` (release workflow).
+**Verified 2026-11-16:** the owner confirmed `https://www.highlineroofingwa.com/` as the production host, and the Cloudflare Worker `highlineroofing` is bound to `www.highlineroofingwa.com` and the apex (read via API). Always Use HTTPS and the apex → www 301 redirect rule were configured in the Cloudflare dashboard on 2026-11-16 and verified live. HSTS is off. Nothing else in the Cloudflare zone has been inspected or changed. Companion docs: `PROJECT-STATUS.md` (current work) and `DEPLOYMENT.md` (release workflow).
 
 ## Project Overview
 
@@ -28,7 +28,7 @@ The existing website design is permanently locked.
 - **Phone:** 425-321-8309
 - **Tel Link:** `tel:+14253218309`
 - **Email:** Highlinebuilderswa@gmail.com (appears in the site's contact details)
-- **Website (proposed canonical, pending client confirmation):** https://www.highlineroofingwa.com/. The old domain `highlinebuildersroofing.com` returns NXDOMAIN and must not be used.
+- **Website (canonical, confirmed by the owner 2026-11-16):** https://www.highlineroofingwa.com/. The old domain `highlinebuildersroofing.com` returns NXDOMAIN and must not be used.
 - **Primary CTA:** Get Free Estimate
 - **Secondary CTA:** Call Now
 
@@ -192,7 +192,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - JSON-LD schema: `RoofingContractor` on home, about, services, contact, reviews, and offer pages. `FAQPage` on home, services, and offer pages. Review schema on reviews. Offer page also has a schema description for the offer.
 - Canonical, `og:url`, and JSON-LD `url` values use the proposed canonical domain `https://www.highlineroofingwa.com/` with clean URLs: `/`, `/about`, `/services`, `/reviews`, `/contact`, `/privacy-policy`, `/terms-of-service`, `/roof-replacement-offer/` (trailing slash). These URLs were verified to return 200 directly on `www`.
 - `privacy-policy.html` and `terms-of-service.html` have `noindex, follow` and are excluded from `sitemap.xml`.
-- `sitemap.xml` lists the five indexable pages (`/`, `/about`, `/services`, `/reviews`, `/contact`). The roof replacement offer page is excluded until its indexing decision is approved.
+- `sitemap.xml` lists the five indexable pages (`/`, `/about`, `/services`, `/reviews`, `/contact`). The roof replacement offer page is excluded until its indexing decision is approved. Live since 2026-11-16 and submitted in the Search Console **domain property** `sc-domain:highlineroofingwa.com` (status Success, 5 pages). Do not create a URL-prefix property.
 - `robots.txt` allows all crawling and references `https://www.highlineroofingwa.com/sitemap.xml`. It is not a security control.
 - Internal links on the seven root pages use relative clean paths (`about`, `services`, `reviews`, `contact`, `privacy-policy`, `terms-of-service`), which return 200 on both hosts without a redirect. Home links (logo, nav, footer) use `./`, which resolves to `/` on Cloudflare and to `/Highline-Roofing/` on GitHub Pages. `js/main.js` treats `./` (and the legacy `index.html`) as the home href for the active-nav highlight. Do not reintroduce `index.html` hrefs (they 307 on production). Approved 2026-11-16.
 - **Missing:** favicon and custom 404 page.
@@ -204,7 +204,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **Default branch:** `main`, tracking `origin/main`
 - **Repo-local author identity:** Jay Duran `<259208228+contractorarsenal@users.noreply.github.com>`. Do not change global Git config.
 - `.DS_Store` is excluded in `.git/info/exclude`. Do not commit it.
-- Remote branches: `main`, `seo/technical-release-1` (SEO Release 1, not merged), `chore/highline-claude-instructions` (identical to `main`), and `cloudflare/workers-autoconfig` (not merged).
+- Remote branches: `main`, `seo/technical-release-1` (SEO Release 1, merged via PR #5 on 2026-11-16), `chore/highline-claude-instructions` (stale), `cloudflare/workers-autoconfig` (not merged), and `docs/release-1-record`.
 - Open PRs: **#4**, "Add Cloudflare Workers configuration" (bot-generated). Do not merge without explicit approval.
 - Rules:
   - Treat `main` as deployment-sensitive. Pushing to `main` triggers two production publishers: GitHub Pages and the Cloudflare Workers Builds for `highlineroofing`. See Deployment.
@@ -220,12 +220,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - **Verified:** GitHub Pages is enabled on the repo (legacy build, source `main` branch, `/` path). Pushes to `main` trigger the "pages build and deployment" workflow. Last successful runs: 2026-09-26 at 14:38 and 14:47 UTC.
 - **GitHub Pages URL:** https://contractorarsenal.github.io/Highline-Roofing/
 - **Custom domain on GitHub Pages:** None configured (Pages API `cname: null`).
-- **Live customer-facing site (verified 2026-10-27):** `https://www.highlineroofingwa.com/` and `https://highlineroofingwa.com/` resolve through Cloudflare. Both serve HTML byte-identical to `main` at the time of verification.
+- **Live customer-facing site (verified 2026-11-16):** `https://www.highlineroofingwa.com/` and `https://highlineroofingwa.com/` are custom domains of Worker `highlineroofing` (version `e1bde0e1`). Both serve HTML byte-identical to `main` (`892ab9c`).
 - **Obsolete domain:** `highlinebuildersroofing.com` returns NXDOMAIN. Confirm registration with the registrar before any production claim that involves it.
-- **Redirects (verified behavior, not configured in the repo):** the apex and `www` both return 200 with no redirect between them. `http://` returns 200 with no redirect to HTTPS. `.html` URLs return 307 to the clean URL, for example `/about.html` to `/about`. Redirect rules are not verified; they are configured in Cloudflare.
+- **Redirects (verified 2026-11-16, configured in Cloudflare, not in the repo):** `http://` on either host → 301 to `https://`; apex → 301 to `https://www.highlineroofingwa.com` with path and query string preserved (Redirect Rule "Redirect apex to www (301)"); `.html` URLs → 307 to the clean URL (Workers `html_handling`). `https://www` URLs serve directly with no redirect.
 - **Cloudflare Workers (verified via GitHub check runs):** the Workers Builds project `highlineroofing` is connected to this repo. Its check run on `main` commit `4e6a89f` succeeded on 2026-10-19 at 08:16 UTC with a production version ID. Pushes to other branches trigger Workers Builds check runs. Feature-branch builds `2bc1239`, `a3a18ae` and `0c652bb` failed (before `wrangler.jsonc` existed; logs are only in the Cloudflare dashboard). Feature-branch builds that succeed publish a non-production preview (for example `1d593f8` → `https://bf12b8ce-highlineroofing.web-7f6.workers.dev`, alias `https://seo-technical-release-1-highlineroofing.web-7f6.workers.dev`), served with `X-Robots-Tag: noindex`. The Cloudflare check suite for `85207b9` stayed `queued` and never built. Builds on `main` have succeeded. The Cloudflare build settings and domain bindings are stored in the Cloudflare dashboard, not in the repo. Not verified from here: the root directory, build command, deploy command, and route bindings.
 - **GitHub Pages (verified):** GitHub Pages serves `main` at `/` (`contractorarsenal.github.io/Highline-Roofing`). It is a second public copy of the site. It has no custom domain.
-- **Workers config on feature branch `seo/technical-release-1`:** `wrangler.jsonc` sets name `highlineroofing`, `assets.directory` to `.`, and `html_handling` to `auto-trailing-slash` (preserves clean URLs). Internal files are excluded by `.assetsignore`. Without this file, Workers Builds fails on `npx wrangler versions upload` with "Missing entry-point to Worker script or to assets directory." Not yet merged to `main`. Merging changes what the production build publishes; verify the dashboard build settings match before merge.
+- **Workers config (on `main` since 2026-11-16):** `wrangler.jsonc` sets name `highlineroofing`, `assets.directory` to `.`, and `html_handling` to `auto-trailing-slash` (preserves clean URLs). Internal files are excluded by `.assetsignore`. Without this file, Workers Builds fails on `npx wrangler versions upload` with "Missing entry-point to Worker script or to assets directory."
 - **Cloudflare PR #4:** proposes a Workers config with the same name, with `assets.directory` set to `.` and no exclusion file. Merging it would publish internal files. Do not merge. Not deployed.
 - No GitHub Actions workflow files exist in the repository. The Pages workflow is GitHub-managed.
 
@@ -235,7 +235,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - When adding any new internal file, add it to **both** `.assetsignore` and `_config.yml` in the same commit.
 - `.assetsignore` excludes these files from Cloudflare Workers static assets.
 - `_config.yml` excludes these files from the GitHub Pages Jekyll build. Jekyll is enabled only for this exclude list; the site has no front matter and no Liquid tags.
-- Status: on the feature branch `seo/technical-release-1`. Isolated tests on 2026-11-04 (real Jekyll 3.9.5 build and a local Wrangler asset server, each with a negative control) confirmed the exclusions. See `PROJECT-STATUS.md`. These tests do not prove the live Cloudflare build. Verify `/CLAUDE.md` returns 404 on both hosts after release.
+- Status: released to `main` on 2026-11-16 (`892ab9c`). Verified live: all seven internal files return 404 on `www.highlineroofingwa.com`, and 404 or GitHub's 503 error page on GitHub Pages. Recheck after any change to these lists.
 - `robots.txt` is not a security control and must not be relied on to hide files.
 
 ### Safe GitHub Publishing Procedure
@@ -267,17 +267,17 @@ These are the agreed command phrases. Each has a fixed scope.
 
 ## Known Issues (Outstanding, Not Approved for Repair)
 
-- Canonical domain decision pending client approval. Proposed: `https://www.highlineroofingwa.com/`. `highlinebuildersroofing.com` is NXDOMAIN.
-- Apex and `www` both serve 200 with no redirect. `http://` is not redirected to HTTPS. Redirect rules need approval in Cloudflare.
+- Canonical domain confirmed by the owner (2026-11-16): `https://www.highlineroofingwa.com/`. `highlinebuildersroofing.com` is NXDOMAIN.
+- Redirects done 2026-11-16: `http://` → `https://` (Always Use HTTPS) and apex → `www` (Redirect Rule, 301, path and query preserved), verified live with no loops. HSTS is not enabled (decide later). The local wrangler OAuth token has `zone (read)` only; these settings live in the dashboard.
 - Cloudflare PR #4 remains open.
 - Contact form validation requires investigation (`novalidate` with no JS validation).
-- Supabase signed media URLs may expire. Three signed `object/sign/` video URLs exist across `about.html` and `index.html`. Tokens are embedded in the URLs and must not be copied elsewhere.
+- **Broken video source:** the Supabase host `ivhxwbmlmqhqncbkjuou.supabase.co` used by four `<source>` elements (three in `index.html`, one in `about.html`; one public and three signed URLs) no longer resolves in DNS, so the videos never load. Posters still render. Needs new hosting and approval. Tokens are embedded in the signed URLs and must not be copied elsewhere.
 - Two Meta Pixel IDs require ownership verification.
 - Business claims and review schema (`aggregateRating` 5.0 / 24) require validation.
-- `sitemap.xml` and `robots.txt` are on the feature branch, not yet deployed. Favicon and 404 page are missing.
-- Live `/CLAUDE.md` is publicly reachable (HTTP 200, checked 2026-11-04) until the SEO branch is released. Recheck on both hosts after release.
-- Cloudflare production configuration is unverified (dashboard only). Final canonical-domain approval is unverified.
-- Earlier Workers Builds feature-branch failures (`2bc1239`, `a3a18ae`, `0c652bb`) predate `wrangler.jsonc`. The check on `1d593f8` succeeded and its preview returned 404 for the excluded files, but the suite for `85207b9` never ran, so the two docs added in that commit are verified excluded only by local `wrangler dev` until a new Cloudflare build runs.
+- Favicon (`/favicon.ico` 404, no `<link rel="icon">`) and a custom 404 page are missing.
+- `/CLAUDE.md` and the other internal files return 404 on both hosts since the 2026-11-16 release (was 200 before).
+- Cloudflare build settings and domain bindings verified via API on 2026-11-16 (Worker `highlineroofing` on `www` and apex, compatibility date matches `wrangler.jsonc`). Zone has one Redirect Rule and Always Use HTTPS on; no Page Rules.
+- Earlier Workers Builds feature-branch failures (`2bc1239`, `a3a18ae`, `0c652bb`) predate `wrangler.jsonc`. Builds for `23c1a62`, `e121335` and the merge `892ab9c` succeeded; excluded files verified 404 on the previews and on production.
 - External image hosting dependencies. Images are hotlinked from `github.com/user-attachments/assets/`. The site has no local image files.
 - Possible double Clarity initialization: the published GTM container (`GTM-N8XLLRPV`) contains one tag whose config holds Clarity project ID `ygb2svjdci`, in addition to the direct Clarity snippet on every page. Not yet verified in the GTM UI.
 - GTM container check: the published container has no GA4 tag. The GA4 ID `G-L1Y3K9JYTW` is installed directly only. A second gtag.js request with a `gtm=` parameter appears intermittently in browser tests, but it sends no extra `config` or `page_view`.

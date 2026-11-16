@@ -1,6 +1,6 @@
 # PROJECT-STATUS.md — Highline Builders & Roofing
 
-Internal document. Not for public serving. Last updated 2026-11-16.
+Internal document. Not for public serving. Last updated 2026-11-16 (post-release).
 
 ## Baseline
 
@@ -102,3 +102,41 @@ Tests run 2026-11-16 on the final tree:
 - `wrangler dev` (local Workers assets): every internal href target 200 with 0 hops (home `./` → `/`, 0 hops); 7 internal files 404; all 12 public files byte-identical to source; sitemap URLs 200.
 - Headless Chrome, 390 px mobile viewport, all 8 pages: CSS applied, H1 present, no horizontal scroll, 0 JS exceptions, `contactForm` and `rhc-form` present, tel links present, `gtag`/`fbq`/`clarity` defined, one GA4 `config` per page, correct canonical. Only failed requests: the Supabase video host (known) and `/favicon.ico` (known).
 - Jekyll (GitHub Pages simulation): isolated Ruby 3.3.6 + Jekyll 4.3.4 build of the final tree, exit 0; output is exactly the 12 public files, byte-identical to source; `CLAUDE.md`, `PROJECT-STATUS.md`, `DEPLOYMENT.md`, `_config.yml`, `.assetsignore`, `wrangler.jsonc`, `.gitignore` absent. Negative control (exclude list removed) leaks all four docs/config files, so the test detects leaks. Limit: GitHub Pages uses the `github-pages` gem (Jekyll 3.10), a close approximation.
+
+
+## Release 1 deployed (2026-11-16)
+
+- **Approval:** owner confirmed `https://www.highlineroofingwa.com/` as the production host and authorized the home-link change and the merge (2026-11-16).
+- **Merged:** PR #5 via merge commit `892ab9c` on `main` (contains `e121335` home links + `23c1a62` clean links and the earlier Release 1 commits). PR #4 untouched.
+- **Deployments:** Cloudflare Workers Builds `deploy` succeeded 20:18 UTC, version `e1bde0e1-9b23-4b68-93fb-00b9ce48fa6b` (previous production version `927b4221`). GitHub Pages build succeeded for `892ab9c` (run 43948329475).
+- **Cloudflare bindings (verified via API, read-only):** Worker `highlineroofing` has custom domains `www.highlineroofingwa.com` and `highlineroofingwa.com` (zone `6db56e4f…`, Free plan, nameservers jade/walt). Compatibility date matches `wrangler.jsonc`. No other bindings. The local wrangler OAuth token has `zone (read)` only, so zone settings, DNS and redirect rulesets could not be read or changed.
+- **Production verification (www, 20:25 UTC):** all 12 public paths 200 with 0 hops and byte-identical to `main` (robots.txt differs only by Cloudflare's managed prefix); all 7 internal files 404; canonicals on all 8 pages point to `https://www.highlineroofingwa.com/` clean URLs; `href="./"` ×5 and no `index.html` hrefs; GTM/GA4 (one `config`)/Clarity/Meta inits present on `/`, `/contact`, `/roof-replacement-offer/`; `contactForm` and `rhc-form` present; `.html`, trailing-slash and no-slash variants 307 to the canonical form. Headless Chrome: active nav correct on every page on www and on the GitHub Pages subpath; clicking Home lands on the clean root. Apex serves byte-identical HTML with the www canonical.
+- **GitHub Pages copy:** 12 public paths 200, byte-identical; internal files return 404 or GitHub's 503 edge error page (same as a nonexistent path), never the file.
+- **robots.txt (live):** Cloudflare's managed block (Content-Signal + 31 AI/scraper crawlers disallowed, unchanged by request) followed by the repo block `User-agent: *` / `Allow: /` / `Sitemap: https://www.highlineroofingwa.com/sitemap.xml`. Googlebot is not named anywhere and is allowed.
+- **Search Console:** the existing verified property is the **domain property** `sc-domain:highlineroofingwa.com` (the account has no access to the URL-prefix property `https://www.highlineroofingwa.com/`; none was created). `https://www.highlineroofingwa.com/sitemap.xml` had been submitted 2026-02-23 with status "Couldn't fetch" (last read 2026-04-24). Resubmitted 2026-11-16: status **Success**, 5 discovered pages.
+
+### Cloudflare HTTPS enforcement and apex → www redirect (done 2026-11-16, ~20:50 UTC)
+
+Configured in the Cloudflare dashboard (zone `highlineroofingwa.com`, signed-in browser session). Inspected first: 0 Redirect Rules, 0 Page Rules, no Bulk Redirects referencing the zone, Always Use HTTPS off, HSTS off, active edge certificates covering apex and `www`. DNS, Worker bindings, email records, AI crawler settings and all other settings untouched.
+
+1. SSL/TLS → Edge Certificates → **Always Use HTTPS: on**. HSTS left off (enable later once the redirects have been stable; it is hard to undo).
+2. Rules → Redirect Rules → single redirect **"Redirect apex to www (301)"**, enabled, order 1 of 1. Match: custom expression `(http.host eq "highlineroofingwa.com")`. Action: dynamic URL redirect, expression `concat("https://www.highlineroofingwa.com", http.request.uri.path)`, status 301, preserve query string on.
+
+Live verification (curl, 20:57 UTC):
+
+| Request | Chain | Final |
+| --- | --- | --- |
+| `http://highlineroofingwa.com/about?x=1` | 301 (1 hop) | `https://www.highlineroofingwa.com/about?x=1` 200 |
+| `https://highlineroofingwa.com/about?x=1` | 301 (1 hop) | same, 200 |
+| `http://www.highlineroofingwa.com/about?x=1` | 301 (1 hop) | same, 200 |
+| `https://www.highlineroofingwa.com/about?x=1` | none (0 hops) | 200 served directly |
+| `http://highlineroofingwa.com/about.html?x=1` | 301 → 307 (2 hops) | same, 200 |
+| `http://www.highlineroofingwa.com/contact.html` (the GSC HTTP URL) | 301 → 307 | `https://www.highlineroofingwa.com/contact` 200 |
+| `https://highlineroofingwa.com/services?utm_source=fb&utm_medium=cpc` | 301 | query string preserved |
+
+No loops: `/`, `/about?x=1` and `/roof-replacement-offer/` on `https://www` return 200 with 0 hops; all 12 public paths on `www` still 200 with 0 hops. The redirect rule fires before Always Use HTTPS, so `http://apex` reaches `https://www` in a single hop.
+
+### Follow-up items recorded separately
+
+- **Broken video source:** four `<source>` elements (three in `index.html`, one in `about.html`) load MP4s from the Supabase project host `ivhxwbmlmqhqncbkjuou.supabase.co` (one public URL, three signed URLs). That host no longer resolves in DNS, so the videos fail on every page load (the browser logs `net::ERR_NAME_NOT_RESOLVED`). The poster images (GitHub user-attachments) still load, so the sections render without the video. Fix needs new hosting for the files and approval (media change).
+- **Favicon:** no `<link rel="icon">` on any page and `/favicon.ico` returns 404 on production. Adding one needs a design asset from the client and approval.
