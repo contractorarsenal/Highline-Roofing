@@ -51,8 +51,8 @@
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav__link').forEach(link => {
     const href = link.getAttribute('href');
-    if (href === currentPage || (currentPage === '' && href === 'index.html') ||
-        (currentPage.toLowerCase() === 'index.html' && href === 'index.html')) {
+    if (href === currentPage || (currentPage.toLowerCase() === 'index.html' &&
+        (href === './' || href === 'index.html'))) {
       link.classList.add('active');
     }
   });

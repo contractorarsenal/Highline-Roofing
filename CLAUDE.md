@@ -194,7 +194,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 - `privacy-policy.html` and `terms-of-service.html` have `noindex, follow` and are excluded from `sitemap.xml`.
 - `sitemap.xml` lists the five indexable pages (`/`, `/about`, `/services`, `/reviews`, `/contact`). The roof replacement offer page is excluded until its indexing decision is approved.
 - `robots.txt` allows all crawling and references `https://www.highlineroofingwa.com/sitemap.xml`. It is not a security control.
-- Internal links on the seven root pages use relative clean paths (`about`, `services`, `reviews`, `contact`, `privacy-policy`, `terms-of-service`), which return 200 on both hosts without a redirect. Home links intentionally remain `index.html` (one 307 to `/`): changing them to `./` would drop the home active-nav highlight because `js/main.js` matches the literal `index.html`, and `/` would break the GitHub Pages copy. Changing that needs a 2-line JS change and approval.
+- Internal links on the seven root pages use relative clean paths (`about`, `services`, `reviews`, `contact`, `privacy-policy`, `terms-of-service`), which return 200 on both hosts without a redirect. Home links (logo, nav, footer) use `./`, which resolves to `/` on Cloudflare and to `/Highline-Roofing/` on GitHub Pages. `js/main.js` treats `./` (and the legacy `index.html`) as the home href for the active-nav highlight. Do not reintroduce `index.html` hrefs (they 307 on production). Approved 2026-11-16.
 - **Missing:** favicon and custom 404 page.
 
 ## Git and GitHub Workflow

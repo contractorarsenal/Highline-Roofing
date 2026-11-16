@@ -25,7 +25,8 @@ Done on the branch:
 - `sitemap.xml` (five indexable pages) and `robots.txt` added.
 - `wrangler.jsonc` added (name `highlineroofing`, assets directory `.`, `auto-trailing-slash`).
 - Internal-file exclusions added for Cloudflare (`.assetsignore`) and GitHub Pages (`_config.yml`), covering `CLAUDE.md`, `PROJECT-STATUS.md`, `DEPLOYMENT.md`, configs.
-- Internal links on the seven root pages changed from `.html` hrefs to relative clean paths (179 links; home links stay `index.html`, see CLAUDE.md SEO section). 2026-11-16.
+- Internal links on the seven root pages changed from `.html` hrefs to relative clean paths (179 links). 2026-11-16.
+- Home links (35, logo/nav/footer) changed from `index.html` to `./`, with a 2-line change in `js/main.js` so `./` counts as the home href for the active-nav highlight. Approved by the owner 2026-11-16. Verified on a local Workers asset server (root) and on a GitHub-Pages-style subpath server: Home highlighted on `/` and `/Highline-Roofing/`, inner pages keep their highlight, clicking Home lands on the clean root. No visual change.
 - Permanent documentation: `CLAUDE.md`, `PROJECT-STATUS.md`, `DEPLOYMENT.md`.
 
 Isolated build test results are listed in the section below.
@@ -90,7 +91,7 @@ Reproduced on production (`www.highlineroofingwa.com`, which serves `main` at `4
 | `/sitemap.xml` 404 | Confirmed | `sitemap.xml` with the 5 indexable pages; `robots.txt` references it |
 | Missing `/roof-repair`, `/roof-replacement`, `/roof-installation`, `/siding`, `/faqs`, `/request-estimate` | All 404. None ever existed in repository history (only the 8 current pages did). Not a regression. | Left as 404 on purpose; no redirects invented. Services are sections on `/services` (`#repair`, `#replacement`, `#installation`, `#siding`, `#gutters`, `#inspections`); estimate requests are `/contact`. New pages would be new content, listed under Needed from the business owner. |
 | Search Console lists an HTTP contact URL | Live condition, not stale: `http://www.highlineroofingwa.com/contact.html` → 307 → `http://.../contact` served over HTTP (200). No HTTPS upgrade, no HSTS. | Not fixable in the repository (assets-only Worker). Needs Cloudflare "Always Use HTTPS" (dashboard, approval). |
-| Internal links (not in the audit, found during repair) | 179 `.html` hrefs per site, each 307 on production; active-nav highlight silently broken on inner pages | Relative clean hrefs; 0 redirects; active-nav works on inner pages (verified headless). 35 `index.html` home links kept (one 307) for the reason in CLAUDE.md |
+| Internal links (not in the audit, found during repair) | 179 `.html` hrefs per site, each 307 on production; active-nav highlight silently broken on inner pages | Relative clean hrefs; 0 redirects; active-nav works on inner pages (verified headless). 35 `index.html` home links changed to `./` (0 redirects) with the approved 2-line JS change |
 | Internal files public | `/CLAUDE.md` 200, `/wrangler.jsonc` 200 (a file not in any repo commit) | Excluded via `.assetsignore` and `_config.yml` |
 
 Redirect matrix observed live (unchanged by this release; all hosting-side): apex and `www` both 200 with no redirect; `http://` 200 with no redirect; `/about/` → 307 → `/about`; `/roof-replacement-offer` → 307 → `/roof-replacement-offer/`; `.html` → 307 → clean. Preview hosts on `workers.dev` carry `X-Robots-Tag: noindex`. Live `robots.txt` is Cloudflare's managed block (blocks 31 AI crawlers, allows `*`, no sitemap line) and will be prepended to the repo file after release; verify the `Sitemap:` line survives.
@@ -98,6 +99,6 @@ Redirect matrix observed live (unchanged by this release; all hosting-side): ape
 Tests run 2026-11-16 on the final tree:
 
 - Diff review: HTML changes are only canonical/og/JSON-LD URLs, the 6 domain-text replacements, and `href` swaps; `css/styles.css`, `js/main.js`, forms, tracking IDs and the offer page are byte-identical to `main`.
-- `wrangler dev` (local Workers assets): every internal href target 200 with 0 hops (`index.html` 1 hop); 7 internal files 404; all 12 public files byte-identical to source; sitemap URLs 200.
+- `wrangler dev` (local Workers assets): every internal href target 200 with 0 hops (home `./` → `/`, 0 hops); 7 internal files 404; all 12 public files byte-identical to source; sitemap URLs 200.
 - Headless Chrome, 390 px mobile viewport, all 8 pages: CSS applied, H1 present, no horizontal scroll, 0 JS exceptions, `contactForm` and `rhc-form` present, tel links present, `gtag`/`fbq`/`clarity` defined, one GA4 `config` per page, correct canonical. Only failed requests: the Supabase video host (known) and `/favicon.ico` (known).
 - Jekyll (GitHub Pages simulation): isolated Ruby 3.3.6 + Jekyll 4.3.4 build of the final tree, exit 0; output is exactly the 12 public files, byte-identical to source; `CLAUDE.md`, `PROJECT-STATUS.md`, `DEPLOYMENT.md`, `_config.yml`, `.assetsignore`, `wrangler.jsonc`, `.gitignore` absent. Negative control (exclude list removed) leaks all four docs/config files, so the test detects leaks. Limit: GitHub Pages uses the `github-pages` gem (Jekyll 3.10), a close approximation.
